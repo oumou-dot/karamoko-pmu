@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karamoko PMU Pro - Méthode Sinayoko</title>
+  <link rel="stylesheet" href="app/css/main.css">
+  <style>
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .hero h1 { font-size: 3.5rem; margin-bottom: 20px; color: #e94560; }
+    .hero .tagline { font-size: 1.3rem; color: #a0a0a0; margin-bottom: 40px; max-width: 600px; }
+    .hero-stats { display: flex; gap: 40px; margin-bottom: 40px; flex-wrap: wrap; justify-content: center; }
+    .hero-stat { text-align: center; }
+    .hero-stat .number { font-size: 2.5rem; font-weight: bold; color: #e94560; }
+    .hero-stat .label { color: #a0a0a0; font-size: 0.9rem; }
+    .cta-button {
+      display: inline-block;
+      padding: 18px 40px;
+      background: #e94560;
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin: 10px;
+    }
+    .cta-button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(233, 69, 96, 0.4); }
+    .cta-secondary { background: transparent; border: 2px solid #e94560; }
+    .features { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+    .features h2 { text-align: center; font-size: 2rem; margin-bottom: 50px; color: #e94560; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; }
+    .feature-card {
+      background: #16213e;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #2a2a4a;
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover { transform: translateY(-5px); border-color: #e94560; }
+    .feature-icon { font-size: 3rem; margin-bottom: 20px; }
+    .feature-card h3 { margin-bottom: 15px; color: #eaeaea; }
+    .feature-card p { color: #a0a0a0; line-height: 1.6; }
+    .method-section { background: #16213e; padding: 80px 20px; }
+    .method-content { max-width: 800px; margin: 0 auto; text-align: center; }
+    .method-content h2 { color: #e94560; margin-bottom: 30px; font-size: 2rem; }
+    .method-content p { color: #a0a0a0; line-height: 1.8; margin-bottom: 20px; }
+    .formula {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1.2rem;
+      color: #e94560;
+      margin: 30px 0;
+      border: 1px solid #2a2a4a;
+    }
+    footer { text-align: center; padding: 40px 20px; color: #666; border-top: 1px solid #2a2a4a; }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .hero-stats { gap: 20px; }
+      .hero-stat .number { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <h1>🐴 Karamoko PMU Pro</h1>
+    <p class="tagline">
+      20 ans d'expérience hippique transformés en algorithme de prédiction. 
+      La Méthode Sinayoko, enfin accessible à tous.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="number">20+</div><div class="label">Années d'expérience</div></div>
+      <div class="hero-stat"><div class="number">100%</div><div class="label">Gratuit & Local</div></div>
+      <div class="hero-stat"><div class="number">Offline</div><div class="label">Fonctionne sans internet</div></div>
+    </div>
+    <div>
+      <a href="app/index.html" class="cta-button">🚀 Lancer l'application</a>
+      <a href="#features" class="cta-button cta-secondary">📖 En savoir plus</a>
+    </div>
+    <p style="margin-top: 30px; font-size: 0.85rem; color: #666;">
+      ✅ PWA - S'installe sur mobile &nbsp;|&nbsp; 🔒 Données locales &nbsp;|&nbsp; 📱 Responsive
+    </p>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Fonctionnalités</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Import PDF PMU</h3>
+        <p>Importez les programmes de courses directement depuis les PDF officiels du PMU.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧮</div>
+        <h3>Algorithme Sinayoko</h3>
+        <p>Formule propriétaire basée sur l'analyse de 20 ans de courses.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📰</div>
+        <h3>Gazette & Combinatoire</h3>
+        <p>Génération automatique des pronostics avec 3 niveaux de confiance.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Statistiques & Historique</h3>
+        <p>Suivez vos analyses, consultez l'historique et exportez en CSV/JSON.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💾</div>
+        <h3>100% Offline</h3>
+        <p>Toutes les données sont stockées localement. Aucune connexion requise.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Confidentialité Totale</h3>
+        <p>Vos données ne quittent jamais votre appareil. Pas de serveur, pas de cloud.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="method-section">
+    <div class="method-content">
+      <h2>La Méthode Sinayoko</h2>
+      <p>Développée au fil de 20 ans d'analyse assidue des courses hippiques...</p>
+      <div class="formula">Score = (100 - Cote) + Σ(Performances) + Correction_Corde</div>
+      <p>Chaque cheval est évalué selon trois critères objectifs...</p>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>© 2026 Karamoko Sinayoko</strong></p>
+    <p>Méthode Sinayoko - Tous droits réservés</p>
+  </footer>
+</body>
+</html>
