@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Karamoko PMU Pro - Application</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a2e">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div>
+        <h1 class="app-title">🐴 Karamoko PMU Pro</h1>
+        <p class="app-subtitle">Méthode Sinayoko - Analyse hippique professionnelle</p>
+      </div>
+      <div>
+        <span id="connection-status">🟢 En ligne</span>
+      </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="app.afficherVueAccueil()">🏠 Accueil</button>
+      <button class="nav-tab" onclick="app.nouvelleSaisie()">✏️ Saisie</button>
+      <button class="nav-tab" onclick="app.afficherVueAnalyse()">📊 Analyse</button>
+      <button class="nav-tab" onclick="app.afficherHistorique()">📚 Historique</button>
+    </nav>
+
+    <!-- Vue Accueil -->
+    <div id="vue-accueil">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🚀 Démarrer une analyse</h2>
+        </div>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btn-import-pdf" style="flex: 1; min-width: 200px;">
+            📄 Importer un PDF PMU
+          </button>
+          <button class="btn btn-secondary" id="btn-manuel" style="flex: 1; min-width: 200px;">
+            ✏️ Saisie manuelle
+          </button>
+        </div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📖 Guide rapide</h2>
+        </div>
+        <ol style="padding-left: 20px; line-height: 2;">
+          <li><strong>Importez</strong> un programme de course PDF ou saisissez les données manuellement</li>
+          <li><strong>Vérifiez</strong> les données et ajustez les paramètres (hippodrome, distance, corde)</li>
+          <li><strong>Lancez</strong> le calcul pour obtenir les scores Sinayoko et les niveaux de confiance</li>
+          <li><strong>Renseignez</strong> tes méthodes personnelles (Gazette, 21/21) pour générer tes combinaisons</li>
+          <li><strong>Sauvegardez</strong> et <strong>exportez</strong> vos analyses</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Vue Saisie -->
+    <div id="vue-saisie" style="display: none;">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">✏️ Saisie des participants</h2>
+        </div>
+        <div id="manual-entry-container"></div>
+      </div>
+    </div>
+
+    <!-- Vue Analyse -->
+    <div id="vue-analyse" style="display: none;">
+      <!-- Paramètres -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">⚙️ Paramètres de la course</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+          <div class="form-group">
+            <label class="form-label">Hippodrome</label>
+            <select class="form-select" id="hippodrome-select">
+              <option value="Vincennes">Vincennes</option>
+              <option value="Compiègne">Compiègne</option>
+              <option value="Auteuil">Auteuil</option>
+              <option value="Enghien">Enghien</option>
+              <option value="Cagnes">Cagnes-sur-Mer</option>
+              <option value="Marseille">Marseille</option>
+              <option value="Bamako">Bamako</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distance</label>
+            <select class="form-select" id="distance-select">
+              <option value="1400m">1400m</option>
+              <option value="1600m">1600m</option>
+              <option value="2000m">2000m</option>
+              <option value="2100m">2100m</option>
+              <option value="2200m">2200m</option>
+              <option value="2700m">2700m</option>
+              <option value="2800m">2800m</option>
+              <option value="2850m">2850m</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Corde</label>
+            <select class="form-select" id="corde-select">
+              <option value="gauche">Gauche</option>
+              <option value="droite">Droite</option>
+              <option value="mobile">Mobile</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Météo</label>
+            <select class="form-select" id="meteo-select">
+              <option value="bon">Bonne</option>
+              <option value="pluie">Pluie</option>
+              <option value="lourd">Lourd</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-primary" id="btn-calculer">🧮 Calculer</button>
+          <button class="btn btn-success" id="btn-sauvegarder">💾 Sauvegarder</button>
+          <button class="btn btn-secondary" id="btn-export">📥 Exporter</button>
+        </div>
+      </div>
+
+      <!-- Tableau des chevaux -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">🏇 Participants</h2>
+        </div>
+        <div id="tableau-chevaux"></div>
+      </div>
+
+      <!-- Graphique des scores -->
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📈 Scores par cheval</h2>
+        </div>
+        <div id="chart-scores-container" style="overflow-x:auto;"></div>
+      </div>
+
+      <!-- Méthodes personnelles de Karamoko (saisie) -->
+      <div id="methodes-saisie-container"></div>
+
+      <!-- Résultats Sinayoko (niveaux de confiance) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div id="favoris-container"></div>
+        <div id="consensus-container"></div>
+        <div id="outsiders-container"></div>
+      </div>
+      
+      <div id="combos-confiance-container" style="margin-top: 20px;"></div>
+
+      <!-- Résultats méthodes personnelles de Karamoko -->
+      <div id="methodes-resultats-container" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Vue Historique -->
+    <div id="vue-historique" style="display: none;">
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📊 Statistiques</h2>
+        </div>
+        <div id="stats-container"></div>
+      </div>
+      
+      <div class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">📚 Courses sauvegardées</h2>
+        </div>
+        <div id="historique-container"></div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/core/engine.js"></script>
+  <script src="js/core/methodes.js"></script>
+  <script src="js/core/combinator.js"></script>
+  <script src="js/core/validator.js"></script>
+  <script src="js/parsers/pdf-parser.js"></script>
+  <script src="js/parsers/manual-entry.js"></script>
+  <script src="js/storage/db.js"></script>
+  <script src="js/storage/exporter.js"></script>
+  <script src="js/storage/backup.js"></script>
+  <script src="js/ui/renderer.js"></script>
+  <script src="js/ui/methodes-renderer.js"></script>
+  <script src="js/ui/charts.js"></script>
+  <script src="js/ui/modals.js"></script>
+  <script src="js/app.js"></script>
+  
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('js/sw.js')
+        .then(reg => console.log('✅ Service Worker enregistré'))
+        .catch(err => console.warn('⚠️ Service Worker non disponible:', err));
+    }
+  </script>
+</body>
+</html>
