@@ -1,1 +1,104 @@
-{}
+{
+  "Vincennes": {
+    "pays": "France",
+    "type": "Trot",
+    "corde": {
+      "gauche": 0,
+      "droite": -2,
+      "mobile": -1
+    },
+    "distances": ["2100m", "2700m", "2850m"],
+    "calibrations": {
+      "2100m": {"base": 1.0, "corde_gauche": 1.0, "corde_droite": 0.95},
+      "2700m": {"base": 1.05, "corde_gauche": 1.05, "corde_droite": 1.0},
+      "2850m": {"base": 1.1, "corde_gauche": 1.1, "corde_droite": 1.05}
+    }
+  },
+  "Compiègne": {
+    "pays": "France",
+    "type": "Plat",
+    "corde": {
+      "gauche": 0
+    },
+    "distances": ["1400m", "1600m", "2000m", "2200m", "2800m"],
+    "calibrations": {
+      "1400m": {"base": 0.9, "corde_gauche": 0.9},
+      "1600m": {"base": 0.95, "corde_gauche": 0.95},
+      "2000m": {"base": 1.0, "corde_gauche": 1.0},
+      "2200m": {"base": 1.03, "corde_gauche": 1.03},
+      "2800m": {"base": 1.08, "corde_gauche": 1.08}
+    },
+    "notes": "Piste en herbe, corde à gauche uniquement, ligne droite de 600m. Petit numéro de corde avantagé en bon terrain."
+  },
+  "Auteuil": {
+    "pays": "France",
+    "type": "Obstacle",
+    "corde": {
+      "gauche": 0,
+      "droite": -3
+    },
+    "distances": ["3600m", "4300m", "4600m"],
+    "calibrations": {
+      "3600m": {"base": 0.9, "corde_gauche": 0.9, "corde_droite": 0.85},
+      "4300m": {"base": 1.0, "corde_gauche": 1.0, "corde_droite": 0.95},
+      "4600m": {"base": 1.05, "corde_gauche": 1.05, "corde_droite": 1.0}
+    }
+  },
+  "Enghien": {
+    "pays": "France",
+    "type": "Trot",
+    "corde": {
+      "gauche": 0,
+      "droite": -1
+    },
+    "distances": ["2150m", "2875m"],
+    "calibrations": {
+      "2150m": {"base": 1.0, "corde_gauche": 1.0, "corde_droite": 0.98},
+      "2875m": {"base": 1.05, "corde_gauche": 1.05, "corde_droite": 1.02}
+    }
+  },
+  "Cagnes": {
+    "pays": "France",
+    "type": "Plat",
+    "corde": {
+      "gauche": 0,
+      "droite": -2
+    },
+    "distances": ["1000m", "1300m", "1600m", "2000m"],
+    "calibrations": {
+      "1000m": {"base": 0.85, "corde_gauche": 0.85, "corde_droite": 0.80},
+      "1300m": {"base": 0.9, "corde_gauche": 0.9, "corde_droite": 0.85},
+      "1600m": {"base": 1.0, "corde_gauche": 1.0, "corde_droite": 0.95},
+      "2000m": {"base": 1.1, "corde_gauche": 1.1, "corde_droite": 1.05}
+    }
+  },
+  "Marseille": {
+    "pays": "France",
+    "type": "Plat",
+    "corde": {
+      "gauche": 0,
+      "droite": -1
+    },
+    "distances": ["1200m", "1600m", "2000m", "2400m"],
+    "calibrations": {
+      "1200m": {"base": 0.9, "corde_gauche": 0.9, "corde_droite": 0.88},
+      "1600m": {"base": 1.0, "corde_gauche": 1.0, "corde_droite": 0.98},
+      "2000m": {"base": 1.05, "corde_gauche": 1.05, "corde_droite": 1.02},
+      "2400m": {"base": 1.1, "corde_gauche": 1.1, "corde_droite": 1.08}
+    }
+  },
+  "Bamako": {
+    "pays": "Mali",
+    "type": "Plat",
+    "corde": {
+      "gauche": 0
+    },
+    "distances": ["1400m", "1600m", "2000m"],
+    "calibrations": {
+      "1400m": {"base": 1.0, "corde_gauche": 1.0},
+      "1600m": {"base": 1.0, "corde_gauche": 1.0},
+      "2000m": {"base": 1.0, "corde_gauche": 1.0}
+    },
+    "notes": "Champ Hippique et Équestre de Bamako. Valeurs neutres provisoires (pas de calibration fiable disponible) — à ajuster toi-même une fois que tu as suffisamment de résultats observés sur cet hippodrome. La plupart des programmes PMU-Mali retransmettent en réalité des courses sur des hippodromes français (Compiègne, Vincennes, etc.) : vérifie toujours l'hippodrome réel indiqué sur le PDF."
+  }
+}
