@@ -1,210 +1,274 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Karamoko PMU Pro - Application</title>
-  <link rel="stylesheet" href="css/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Karamoko PMU Pro – Analyse hippique professionnelle, méthode Sinayoko">
+  <meta name="theme-color" content="#1B7A3E">
+  <title>Karamoko PMU Pro</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1a1a2e">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="app-header">
-      <div>
-        <h1 class="app-title">🐴 Karamoko PMU Pro</h1>
-        <p class="app-subtitle">Méthode Sinayoko - Analyse hippique professionnelle</p>
-      </div>
-      <div>
-        <span id="connection-status">🟢 En ligne</span>
-      </div>
-    </header>
+<div class="app-container">
 
-    <!-- Navigation -->
-    <nav class="nav-tabs">
-      <button class="nav-tab active" onclick="app.afficherVueAccueil()">🏠 Accueil</button>
-      <button class="nav-tab" onclick="app.nouvelleSaisie()">✏️ Saisie</button>
-      <button class="nav-tab" onclick="app.afficherVueAnalyse()">📊 Analyse</button>
-      <button class="nav-tab" onclick="app.afficherHistorique()">📚 Historique</button>
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="app-logo">
+      <img src="icons/icon-192x192.png" alt="Karamoko PMU Pro">
+      <div>
+        <div class="app-title">🏇 Karamoko PMU Pro</div>
+        <div class="app-subtitle">Méthode Sinayoko · Analyse hippique professionnelle</div>
+      </div>
+    </div>
+    <nav class="app-nav" role="navigation" aria-label="Navigation principale">
+      <button class="nav-btn active" data-vue="accueil" aria-current="page">🏠 Accueil</button>
+      <button class="nav-btn" data-vue="saisie">✏️ Saisie</button>
+      <button class="nav-btn" data-vue="analyse">📊 Analyse</button>
+      <button class="nav-btn" data-vue="historique">📚 Historique</button>
     </nav>
+    <div class="status-badge" id="status-badge">
+      <span class="status-dot"></span>
+      <span id="status-text">En ligne</span>
+    </div>
+  </header>
 
-    <!-- Vue Accueil -->
-    <div id="vue-accueil">
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">🚀 Démarrer une analyse</h2>
+  <!-- ══════════ VUE ACCUEIL ══════════ -->
+  <main id="vue-accueil" class="vue active" role="main">
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🚀 Démarrer une analyse</h2>
+      </div>
+      <div class="panel-body">
+        <div class="action-grid">
+          <button class="action-card primary" id="btn-import-pdf-accueil">
+            <div class="action-card-icon">📄</div>
+            <div>
+              <div>Importer un fichier</div>
+              <div style="font-size:.8rem;opacity:.85;font-weight:400;margin-top:3px;">PDF, Word, CSV, image scannée</div>
+            </div>
+          </button>
+          <button class="action-card secondary" id="btn-saisie-manuelle-accueil">
+            <div class="action-card-icon">✏️</div>
+            <div>
+              <div>Saisie manuelle</div>
+              <div style="font-size:.8rem;color:var(--text-muted);font-weight:400;margin-top:3px;">Entrer les données directement</div>
+            </div>
+          </button>
         </div>
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-          <button class="btn btn-primary" id="btn-import-pdf" style="flex: 1; min-width: 200px;">
-            📄 Importer un PDF PMU
-          </button>
-          <button class="btn btn-secondary" id="btn-manuel" style="flex: 1; min-width: 200px;">
-            ✏️ Saisie manuelle
-          </button>
+
+        <!-- Zone de dépôt fichier (cachée par défaut, affichée au clic) -->
+        <div id="upload-zone-container" style="display:none;margin-top:4px;">
+          <div class="upload-zone" id="upload-zone">
+            <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.csv,.txt">
+            <div class="upload-icon">📂</div>
+            <div class="upload-title">Glissez votre fichier ici ou cliquez pour parcourir</div>
+            <div class="upload-hint">Le fichier sera analysé automatiquement</div>
+            <div class="upload-formats">
+              <span class="upload-format-tag">PDF programme PMU</span>
+              <span class="upload-format-tag">PDF scanné</span>
+              <span class="upload-format-tag">Word (.docx)</span>
+              <span class="upload-format-tag">CSV</span>
+              <span class="upload-format-tag">Image (JPG/PNG)</span>
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📖 Guide rapide</h2>
+    </div>
+
+    <!-- Stats rapides -->
+    <div id="stats-container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total-courses">0</div>
+          <div class="stat-label">Courses analysées</div>
         </div>
-        <ol style="padding-left: 20px; line-height: 2;">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-hippodromes">0</div>
+          <div class="stat-label">Hippodromes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-derniere">-</div>
+          <div class="stat-label">Dernière analyse</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guide rapide -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📖 Guide rapide</h2>
+      </div>
+      <div class="panel-body">
+        <ol class="guide-list">
           <li><strong>Importez</strong> un programme de course PDF ou saisissez les données manuellement</li>
           <li><strong>Vérifiez</strong> les données et ajustez les paramètres (hippodrome, distance, corde)</li>
           <li><strong>Lancez</strong> le calcul pour obtenir les scores Sinayoko et les niveaux de confiance</li>
-          <li><strong>Renseignez</strong> tes méthodes personnelles (Gazette, 21/21) pour générer tes combinaisons</li>
+          <li><strong>Renseignez</strong> vos méthodes personnelles (Gazette, 21/21, Presse) pour générer vos combinaisons</li>
           <li><strong>Sauvegardez</strong> et <strong>exportez</strong> vos analyses</li>
         </ol>
       </div>
     </div>
 
-    <!-- Vue Saisie -->
-    <div id="vue-saisie" style="display: none;">
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">✏️ Saisie des participants</h2>
+  </main>
+
+  <!-- ══════════ VUE SAISIE ══════════ -->
+  <section id="vue-saisie" class="vue" aria-label="Saisie des participants">
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">✏️ Saisie des participants</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-icon" id="btn-import-pdf-saisie" title="Importer un fichier">📄 Importer</button>
+          <input type="file" id="file-input-saisie" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.csv,.txt" style="display:none">
         </div>
-        <div id="manual-entry-container"></div>
+      </div>
+      <div class="panel-body">
+        <div id="saisie-manuelle-container"></div>
       </div>
     </div>
 
-    <!-- Vue Analyse -->
-    <div id="vue-analyse" style="display: none;">
-      <!-- Paramètres -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">⚙️ Paramètres de la course</h2>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+    <!-- Paramètres de course -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">⚙️ Paramètres de la course</h2>
+      </div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:clamp(12px,2vw,18px);">
           <div class="form-group">
-            <label class="form-label">Hippodrome</label>
-            <select class="form-select" id="hippodrome-select">
-              <option value="Vincennes">Vincennes</option>
-              <option value="Compiègne">Compiègne</option>
-              <option value="Auteuil">Auteuil</option>
-              <option value="Enghien">Enghien</option>
-              <option value="Cagnes">Cagnes-sur-Mer</option>
-              <option value="Marseille">Marseille</option>
-              <option value="Bamako">Bamako</option>
-            </select>
+            <label class="form-label" for="hippodrome-select">Hippodrome</label>
+            <select id="hippodrome-select" class="form-input"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Distance</label>
-            <select class="form-select" id="distance-select">
-              <option value="1400m">1400m</option>
-              <option value="1600m">1600m</option>
-              <option value="2000m">2000m</option>
-              <option value="2100m">2100m</option>
-              <option value="2200m">2200m</option>
-              <option value="2700m">2700m</option>
-              <option value="2800m">2800m</option>
-              <option value="2850m">2850m</option>
-            </select>
+            <label class="form-label" for="distance-select">Distance</label>
+            <select id="distance-select" class="form-input"></select>
           </div>
           <div class="form-group">
-            <label class="form-label">Corde</label>
-            <select class="form-select" id="corde-select">
+            <label class="form-label" for="corde-select">Corde</label>
+            <select id="corde-select" class="form-input">
               <option value="gauche">Gauche</option>
               <option value="droite">Droite</option>
               <option value="mobile">Mobile</option>
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Météo</label>
-            <select class="form-select" id="meteo-select">
-              <option value="bon">Bonne</option>
-              <option value="pluie">Pluie</option>
-              <option value="lourd">Lourd</option>
+            <label class="form-label" for="type-course-select">Type de course</label>
+            <select id="type-course-select" class="form-input">
+              <option value="plat">Plat</option>
+              <option value="obstacle">Obstacle</option>
+              <option value="trot">Trot</option>
             </select>
           </div>
         </div>
-        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-primary" id="btn-calculer">🧮 Calculer</button>
-          <button class="btn btn-success" id="btn-sauvegarder">💾 Sauvegarder</button>
-          <button class="btn btn-secondary" id="btn-export">📥 Exporter</button>
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-valider-saisie">✅ Valider et analyser</button>
+          <button class="btn btn-danger"  id="btn-effacer-saisie">🗑️ Effacer tout</button>
         </div>
       </div>
-
-      <!-- Tableau des chevaux -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">🏇 Participants</h2>
-        </div>
-        <div id="tableau-chevaux"></div>
-      </div>
-
-      <!-- Graphique des scores -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📈 Scores par cheval</h2>
-        </div>
-        <div id="chart-scores-container" style="overflow-x:auto;"></div>
-      </div>
-
-      <!-- Méthodes personnelles de Karamoko (saisie) -->
-      <div id="methodes-saisie-container"></div>
-
-      <!-- Résultats Sinayoko (niveaux de confiance) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-        <div id="favoris-container"></div>
-        <div id="consensus-container"></div>
-        <div id="outsiders-container"></div>
-      </div>
-      
-      <div id="combos-confiance-container" style="margin-top: 20px;"></div>
-
-      <!-- Résultats méthodes personnelles de Karamoko -->
-      <div id="methodes-resultats-container" style="margin-top: 20px;"></div>
     </div>
 
-    <!-- Vue Historique -->
-    <div id="vue-historique" style="display: none;">
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📊 Statistiques</h2>
+  </section>
+
+  <!-- ══════════ VUE ANALYSE ══════════ -->
+  <section id="vue-analyse" class="vue" aria-label="Analyse de la course">
+
+    <!-- Infos de la course -->
+    <div class="panel" id="panel-course-info" style="display:none;">
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
+          <span style="font-size:1.5rem;">🏟️</span>
+          <div>
+            <div id="info-hippodrome" style="font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:var(--text-h);">-</div>
+            <div id="info-course-details" style="font-size:.82rem;color:var(--text-muted);"></div>
+          </div>
         </div>
-        <div id="stats-container"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-recalculer">🔄 Recalculer</button>
+          <button class="btn btn-secondary" id="btn-export-csv">📥 Export CSV</button>
+          <button class="btn btn-secondary" id="btn-sauvegarder">💾 Sauvegarder</button>
+        </div>
       </div>
-      
-      <div class="panel">
-        <div class="panel-header">
-          <h2 class="panel-title">📚 Courses sauvegardées</h2>
-        </div>
+    </div>
+
+    <!-- Tableau des chevaux -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">🏇 Participants</h2>
+        <span id="nb-partants-badge" class="badge badge-outline"></span>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div id="tableau-chevaux"></div>
+      </div>
+    </div>
+
+    <!-- Graphique des scores -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📈 Scores par cheval</h2>
+      </div>
+      <div class="panel-body" style="overflow-x:auto;padding:16px;">
+        <div id="chart-scores-container"></div>
+      </div>
+    </div>
+
+    <!-- Méthodes personnelles de Karamoko (saisie) -->
+    <div id="methodes-saisie-container"></div>
+
+    <!-- Résultats Sinayoko -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(10px,2vw,18px);">
+      <div id="favoris-container"></div>
+      <div id="consensus-container"></div>
+      <div id="outsiders-container"></div>
+    </div>
+
+    <div id="combos-confiance-container" style="margin-top:0;"></div>
+
+    <!-- Résultats méthodes Karamoko -->
+    <div id="methodes-resultats-container"></div>
+
+  </section>
+
+  <!-- ══════════ VUE HISTORIQUE ══════════ -->
+  <section id="vue-historique" class="vue" aria-label="Historique des courses">
+    <div class="panel">
+      <div class="panel-header">
+        <h2 class="panel-title">📚 Historique des analyses</h2>
+        <button class="btn btn-danger btn-icon" id="btn-vider-historique">🗑️ Tout vider</button>
+      </div>
+      <div class="panel-body">
         <div id="historique-container"></div>
       </div>
     </div>
+  </section>
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-      <div class="spinner"></div>
-      <p>Chargement...</p>
-    </div>
-  </div>
+  <!-- Toasts -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
-  <!-- Scripts -->
-  <script src="js/core/engine.js"></script>
-  <script src="js/core/methodes.js"></script>
-  <script src="js/core/combinator.js"></script>
-  <script src="js/core/validator.js"></script>
-  <script src="js/parsers/pdf-parser.js"></script>
-  <script src="js/parsers/manual-entry.js"></script>
-  <script src="js/storage/db.js"></script>
-  <script src="js/storage/exporter.js"></script>
-  <script src="js/storage/backup.js"></script>
-  <script src="js/ui/renderer.js"></script>
-  <script src="js/ui/methodes-renderer.js"></script>
-  <script src="js/ui/charts.js"></script>
-  <script src="js/ui/modals.js"></script>
-  <script src="js/app.js"></script>
-  
-  <!-- Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('js/sw.js')
-        .then(reg => console.log('✅ Service Worker enregistré'))
-        .catch(err => console.warn('⚠️ Service Worker non disponible:', err));
-    }
-  </script>
+</div><!-- /.app-container -->
+
+<!-- Scripts dans l'ordre de dépendance -->
+<script src="js/core/engine.js"></script>
+<script src="js/core/methodes.js"></script>
+<script src="js/core/combinator.js"></script>
+<script src="js/core/validator.js"></script>
+<script src="js/parsers/pdf-parser.js"></script>
+<script src="js/parsers/manual-entry.js"></script>
+<script src="js/storage/db.js"></script>
+<script src="js/storage/exporter.js"></script>
+<script src="js/storage/backup.js"></script>
+<script src="js/ui/renderer.js"></script>
+<script src="js/ui/methodes-renderer.js"></script>
+<script src="js/ui/charts.js"></script>
+<script src="js/ui/modals.js"></script>
+<script src="js/app.js"></script>
+<script>
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./js/sw.js').catch(() => {});
+  }
+</script>
 </body>
 </html>
