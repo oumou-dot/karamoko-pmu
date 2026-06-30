@@ -49,6 +49,19 @@
   color: var(--text-h);
 }
 
+@media (max-width: 480px) {
+  .manual-entry-form::after {
+    content: '← Faites glisser pour voir toutes les colonnes →';
+    display: block;
+    text-align: center;
+    font-size: .68rem;
+    color: var(--text-muted);
+    padding: 6px;
+    position: sticky;
+    left: 0;
+  }
+}
+
 .manual-controls {
   display: flex;
   align-items: center;
@@ -84,6 +97,9 @@
   gap: 4px;
   max-height: 500px;
   overflow-y: auto;
+  overflow-x: auto;            /* permet le défilement horizontal sur mobile
+                                   au lieu de couper/cacher les colonnes */
+  -webkit-overflow-scrolling: touch;
   margin-bottom: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -98,6 +114,9 @@
   padding: 5px 10px;
   border-bottom: 1px solid var(--border);
   transition: background .15s;
+  min-width: 560px;            /* garantit que les colonnes gardent une
+                                   largeur lisible ; le scroll horizontal
+                                   du parent prend le relais sur petit écran */
 }
 .form-row:last-child { border-bottom: none; }
 .form-row:hover { background: var(--green-light); }
@@ -148,18 +167,22 @@
 
 @media (max-width: 640px) {
   .form-row {
-    grid-template-columns: 28px 1.4fr 50px 58px repeat(5, 38px);
-    gap: 3px;
-    padding: 4px 6px;
+    grid-template-columns: 32px 1.6fr 56px 64px repeat(5, 44px);
+    gap: 4px;
+    padding: 5px 8px;
+    min-width: 500px;          /* le tableau défile horizontalement plutôt
+                                   que de se réduire au point de devenir
+                                   illisible ou de disparaître visuellement */
   }
 }
 @media (max-width: 440px) {
   .form-row {
-    grid-template-columns: 24px 1.2fr 44px 52px repeat(5, 34px);
-    gap: 2px;
-    font-size: .72rem;
+    grid-template-columns: 30px 1.5fr 52px 58px repeat(5, 40px);
+    gap: 3px;
+    font-size: .78rem;
+    min-width: 460px;
   }
-  .form-row input { padding: 4px 4px; font-size: .72rem; }
+  .form-row input { padding: 5px 5px; font-size: .76rem; }
 }
 
 /* ── Presse grid (4 journaux) ── */
