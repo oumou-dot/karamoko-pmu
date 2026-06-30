@@ -116,7 +116,15 @@ const PDFParser = {
    * Extrait les données structurées à partir des mots positionnés
    */
   extraireDonnees(mots, largeurPage, nomFichier = '') {
-    const limiteX = largeurPage * this.config.limiteColonneTableau;
+    // ── Détection DYNAMIQUE de la limite tableau/commentaires ──
+    // Une fraction fixe de la largeur de page (ex: 0.52) est trop fragile :
+    // selon le PDF, la colonne "cote" (dernière colonne du tableau, format
+    // "4.5/1") peut déborder légèrement au-delà de cette fraction et se
+    // retrouver exclue du tableau, ce qui fait disparaître TOUS les chevaux
+    // silencieusement (aucune cote détectée = aucun cheval reconnu).
+    // On cherche donc la position x réelle des cotes ("N/1" ou "N.N/1")
+    // dans le document, et on place la limite juste après elles.
+    const limiteX = this.detecterLimiteColonne(mots, largeurPage);
 
     // Tout le texte concaténé (utile pour détecter hippodrome/date/course/distance,
     // qui sont en haut de page et ne posent pas de problème de colonne).
@@ -152,7 +160,8 @@ const PDFParser = {
       metadonnees: {
         nbMots: mots.length,
         dateExtraction: new Date().toISOString(),
-        format: 'PMU-Mali'
+        format: 'PMU-Mali',
+        limiteColonneDetectee: limiteX
       }
     };
 
@@ -210,9 +219,46 @@ const PDFParser = {
   },
 
   /**
-   * Détecte si la course est un "handicap divisé" (plat), ce qui implique
-   * généralement une numérotation de corde spécifique par division.
+   * Détecte dynamiquement la position x qui sépare la colonne "tableau"
+   * (numéro, nom, corde, sexe/âge, poids, origines, gains, jockey,
+   * entraîneur, propriétaire, performances, cote) de la colonne
+   * "commentaires de la presse".
+   *
+   * Méthode : la dernière colonne du tableau est toujours la cote, au
+   * format "4.5/1", "10/1", etc. On cherche tous les mots qui matchent ce
+   * motif sur l'ensemble de la page, on prend la position x la plus à
+   * droite parmi eux (+ une marge de sécurité pour couvrir leur largeur),
+   * et on l'utilise comme limite. Cette approche s'adapte automatiquement
+   * à la mise en page réelle du PDF au lieu de deviner un pourcentage fixe
+   * de la largeur de page, qui s'est révélé trop fragile (toutes les cotes
+   * peuvent se retrouver juste après le seuil fixe et donc être exclues,
+   * ce qui fait disparaître silencieusement TOUS les chevaux).
+   *
+   * Repli : si aucune cote n'est détectable de cette façon (PDF avec une
+   * mise en page très différente), on retombe sur l'ancienne méthode par
+   * fraction fixe de la largeur de page.
    */
+  detecterLimiteColonne(mots, largeurPage) {
+    const margeSecurite = 15; // points, pour couvrir la largeur du texte de la cote elle-même
+
+    const motsCote = mots.filter(m => /^\d+(?:[.,]\d+)?\s*\/\s*1$/.test(m.texte));
+
+    if (motsCote.length >= 2) {
+      const maxX = Math.max(...motsCote.map(m => m.x));
+      const limite = maxX + margeSecurite;
+      // Garde-fou : la limite ne doit pas dépasser ~70% de la page (sinon
+      // on risque d'avaler une partie de la colonne commentaires) ni être
+      // inférieure à ~30% (sinon on coupe le tableau lui-même).
+      const limiteMin = largeurPage * 0.30;
+      const limiteMax = largeurPage * 0.70;
+      return Math.min(Math.max(limite, limiteMin), limiteMax);
+    }
+
+    // Repli : ancienne méthode par fraction fixe
+    return largeurPage * this.config.limiteColonneTableau;
+  },
+
+
   detecterHandicapDivise(texte) {
     return /HANDICAP\s+DIVIS[EÉ]/i.test(texte);
   },
@@ -295,33 +341,89 @@ const PDFParser = {
     if (mots.length < 6) return null;
 
     const premier = mots[0];
-    // Le numéro doit être en tout début de ligne (x < 16) et purement numérique (1 à 2 chiffres)
-    if (premier.x > 16 || !/^\d{1,2}$/.test(premier.texte)) return null;
-    const numero = parseInt(premier.texte, 10);
+    if (premier.x > 16) return null;
+
+    // Le numéro doit être en tout début de ligne (x < 16). Normalement
+    // c'est un mot purement numérique ("1", "13"), mais certains PDF
+    // n'insèrent pas de véritable espace entre le numéro et le nom du
+    // cheval (l'espacement n'étant que visuel) : le moteur de texte les
+    // fusionne alors en un seul item, ex. "2IMPLORA", "10ISTER". On
+    // détecte ce cas en extrayant le préfixe numérique et on réinjecte le
+    // reste comme premier mot du nom.
+    let numero;
+    // motsRestants = tous les mots qui suivent le numéro et qui doivent
+    // être analysés pour nom/sexe/âge/corde. Dans le cas simple, c'est
+    // mots[1:] (on retire juste le mot-numéro). Dans le cas fusionné
+    // ("2IMPLORA"), le premier mot contient DÉJÀ le début du nom : il ne
+    // faut surtout pas le retirer, seulement le préfixe numérique en a été
+    // extrait séparément.
+    let motsRestants;
+    const matchSimple = /^(\d{1,2})$/.exec(premier.texte);
+    const matchFusionne = /^(\d{1,2})([A-Za-zÀ-ÿ'].*)$/.exec(premier.texte);
+
+    if (matchSimple) {
+      numero = parseInt(matchSimple[1], 10);
+      motsRestants = mots.slice(1);
+    } else if (matchFusionne) {
+      numero = parseInt(matchFusionne[1], 10);
+      // Le reste du texte de ce mot (après le numéro) est le début du nom :
+      // on le garde comme premier élément de motsRestants, suivi des mots
+      // suivants de la ligne — rien n'est perdu.
+      const motRestant = { ...premier, texte: matchFusionne[2] };
+      motsRestants = [motRestant, ...mots.slice(1)];
+    } else {
+      return null;
+    }
+
     if (numero < 1 || numero > 30) return null;
 
     // Reconstituer le texte complet de la ligne pour les regex globaux (cote, perf)
-    const texteLigne = mots.map(m => m.texte).join(' ');
+    const texteLigne = motsRestants.map(m => m.texte).join(' ');
 
-    // Cote : format fraction "4.5/1", "10/1", "30/1" — toujours en fin de ligne
-    const matchCote = texteLigne.match(/(\d+(?:[.,]\d+)?)\s*\/\s*1\b/);
+    // Performances : format "2-2-3-1-0" (5 positions séparées par des tirets).
+    // On cherche les performances AVANT la cote (et non l'inverse) car dans
+    // certains PDF réels, le texte est collé sans espace entre les colonnes
+    // adjacentes (ex: le nom de famille du propriétaire collé directement au
+    // premier chiffre des performances : "BARJON8-1-0-D-3", ou la dernière
+    // performance collée à la cote : "2-D-D-4-628/1"). Un \b classique en
+    // tout début de motif échoue dans ces cas car aucune frontière de mot
+    // n'existe entre une lettre et un chiffre adjacents. On utilise donc
+    // un lookbehind qui interdit seulement un chiffre/point/slash juste
+    // avant (mais autorise une lettre collée), et un lookahead qui interdit
+    // une lettre ou un tiret juste après.
+    //
+    // Chaque position est normalement un chiffre (place d'arrivée), mais
+    // peut aussi être une lettre-code standard des courses de trot/galop
+    // quand le cheval n'a pas terminé normalement : D (Distancé/Disqualifié),
+    // A (Arrêté), T (Tombé), R (Retiré), etc.
+    const matchPerf = texteLigne.match(
+      /(?<![0-9./])([0-9A-Za-z])-([0-9A-Za-z])-([0-9A-Za-z])-([0-9A-Za-z])-([0-9A-Za-z])(?![A-Za-z-])/
+    );
+    if (!matchPerf) return null;
+    const performances = [
+      this.normaliserPerf(matchPerf[1]),
+      this.normaliserPerf(matchPerf[2]),
+      this.normaliserPerf(matchPerf[3]),
+      this.normaliserPerf(matchPerf[4]),
+      this.normaliserPerf(matchPerf[5])
+    ];
+
+    // Cote : format fraction "4.5/1", "10/1", "30/1" — toujours juste après
+    // les performances. On cherche UNIQUEMENT dans le texte situé après la
+    // fin du motif de performance déjà trouvé : ça évite que le dernier
+    // chiffre de la performance soit happé par erreur dans la cote quand
+    // les deux sont collés sans espace (ex: "...4-628/1" est "perf finissant
+    // par 6" + "cote 28/1", pas "cote 628/1").
+    const texteApresPerf = texteLigne.slice(matchPerf.index + matchPerf[0].length);
+    const matchCote = texteApresPerf.match(/(\d+(?:[.,]\d+)?)\s*\/\s*1(?!\d)/);
     if (!matchCote) return null;
     const cote = parseFloat(matchCote[1].replace(',', '.'));
 
-    // Performances : format "2-2-3-1-0" (5 chiffres séparés par des tirets)
-    const matchPerf = texteLigne.match(/\b(\d)-(\d)-(\d)-(\d)-(\d)\b/);
-    if (!matchPerf) return null;
-    const performances = [
-      parseInt(matchPerf[1], 10),
-      parseInt(matchPerf[2], 10),
-      parseInt(matchPerf[3], 10),
-      parseInt(matchPerf[4], 10),
-      parseInt(matchPerf[5], 10)
-    ];
-
     // Sexe/Âge : motif "M5", "H6" (collés), ou "4 F" / "6 F" (avec espace, parfois
     // fusionnés en un seul item texte par pdf.js, parfois en deux items distincts)
-    const motsApresNumero = mots.slice(1);
+    // motsRestants exclut déjà le numéro (et, dans le cas fusionné, contient
+    // bien le début du nom comme premier élément) — pas de slice(1) ici.
+    const motsApresNumero = motsRestants;
     let sexeAgeIndex = -1;
     let sexe = null;
     let age = null;
@@ -357,8 +459,21 @@ const PDFParser = {
 
     // Le nom du cheval = tous les mots avant le marqueur sexe/âge
     let motsNom = sexeAgeIndex >= 0 ? motsApresNumero.slice(0, sexeAgeIndex) : [];
-    // Le dernier mot avant le sexe/âge est généralement le numéro de corde
-    // (purement numérique, court) — on l'exclut du nom.
+
+    // Sur certains PDF, la distance individuelle ("2950") et le record
+    // chronométrique ("1:10:4") du cheval apparaissent ENTRE le nom et le
+    // marqueur sexe/âge, au lieu d'être absents de cette zone. Sans filtre,
+    // ils se retrouvaient inclus dans le nom ("JOLIE STAR 2950 1:10:4").
+    // On les retire avant de construire le nom final.
+    motsNom = motsNom.filter(m => {
+      const t = m.texte;
+      if (/^\d{3,4}$/.test(t)) return false;           // distance type "2950"
+      if (/^\d{1,2}:\d{2}:\d{1,2}$/.test(t)) return false; // record type "1:10:4"
+      return true;
+    });
+
+    // Le dernier mot restant avant le sexe/âge est généralement le numéro
+    // de corde (purement numérique, court) — on l'exclut du nom.
     let corde = null;
     if (motsNom.length > 0) {
       const dernier = motsNom[motsNom.length - 1];
@@ -381,6 +496,18 @@ const PDFParser = {
       performances,
       source: 'pdf-pmu-mali'
     };
+  },
+
+  /**
+   * Normalise une position de performance individuelle : un chiffre devient
+   * un nombre, un code-lettre (D, A, T, R...) est conservé tel quel en
+   * majuscule. 0 est utilisé comme valeur numérique neutre en repli pour
+   * les calculs qui exigent un nombre, mais le code d'origine doit être
+   * conservé quelque part pour l'affichage — voir performancesAffichage.
+   */
+  normaliserPerf(valeur) {
+    if (/^\d$/.test(valeur)) return parseInt(valeur, 10);
+    return valeur.toUpperCase(); // ex: 'D', 'A', 'T', 'R'
   },
 
   nettoyerNom(nom) {
