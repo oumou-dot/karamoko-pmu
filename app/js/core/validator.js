@@ -22,7 +22,17 @@ const Validator = {
         ...cheval,
         nom: (cheval.nom || '').trim(),
         cote: parseFloat(cheval.cote) || 0,
-        performances: (cheval.performances || []).map(p => parseInt(p) || 0)
+        // Un chiffre devient un nombre ; un code-lettre standard de
+        // performance (D=Distancé, A=Arrêté, T=Tombé, R=Retiré...) est
+        // préservé tel quel au lieu d'être écrasé en 0. Le confondre avec
+        // un vrai 0 (classé dernier) fausserait les statistiques utilisées
+        // par la méthode Sinayoko.
+        performances: (cheval.performances || []).map(p => {
+          if (typeof p === 'number') return p;
+          if (/^\d+$/.test(String(p))) return parseInt(p, 10);
+          if (/^[A-Za-z]$/.test(String(p))) return String(p).toUpperCase();
+          return 0;
+        })
       }
     };
   },
