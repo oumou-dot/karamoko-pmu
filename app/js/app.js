@@ -333,7 +333,12 @@ class KaramokoPMApp {
         if (nom) this.course.chevaux[i].nom = nom;
         this.course.chevaux[i].cote  = parseFloat(cote) || 0;
         this.course.chevaux[i].corde = corde ? parseInt(corde, 10) : null;
-        this.course.chevaux[i].performances = perfs.map(p => parseInt(p) || 0);
+        this.course.chevaux[i].performances = perfs.map(p => {
+          const v = String(p).trim();
+          if (/^\d+$/.test(v)) return parseInt(v, 10);
+          if (/^[A-Za-z]$/.test(v)) return v.toUpperCase();
+          return 0;
+        });
       }
     });
   }
