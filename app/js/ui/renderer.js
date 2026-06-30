@@ -33,7 +33,7 @@ const UIRenderer = {
           <td><input type="number" class="input-corde" value="${c.corde ?? ''}" min="1" max="30" style="width:55px;" data-field="corde"></td>
           <td><input type="number" class="input-cote" value="${c.cote || 10}" min="0.1" max="100" step="0.1" style="width:65px;" data-field="cote"></td>
           ${(c.performances || [0,0,0,0,0]).map((p, j) => `
-            <td><input type="number" class="input-perf" value="${p}" min="0" max="9" style="width:42px;text-align:center;" data-field="perf-${j}"></td>
+            <td><input type="text" inputmode="numeric" class="input-perf" value="${this.echapper(String(p))}" maxlength="2" style="width:42px;text-align:center;" data-field="perf-${j}" title="Chiffre = position d'arrivée. Lettre = D (Distancé), A (Arrêté), T (Tombé), R (Retiré)"></td>
           `).join('')}
           <td class="score-cell">-</td>
           <td class="niveau-cell"><span class="badge badge-default">-</span></td>
